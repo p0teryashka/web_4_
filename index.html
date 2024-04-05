@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div align="center">
+    <p><input type="file" id="fileSelector" accept=".jpg, .jpeg, .png"></p>
+    <p><textarea id="log" rows="4" cols="50"></textarea></p>
+    <p><img id="imgContainer" style="max-height: 70vh; max-weight: 50vh" src=""></p>
+</div>
+
+<script type="text/javascript">
+    const imgContainer = document.getElementById('imgContainer');
+    const fileSelector = document.getElementById('fileSelector');
+    const log = document.getElementById('log');
+    // если выбран файл, запускаем функцию...
+    fileSelector.addEventListener('change', (event) => {
+        const files = event.target.files;
+        if (files && files.length) {
+            var reader = new FileReader();      // загрузчик файла изображения
+            // выполняем при загрузке изображения...
+            reader.onload = function () {
+                log.value = 'Классифицируем...\n';
+                imgContainer.src = reader.result;    // вставляем картинку в элемент img на сранице
+                // если картинка загружена успешно...
+                if (typeof(imgContainer) != 'undefined' && imgContainer != null) {
+                    // Загружаем модель
+                    mobilenet.load().then(model => {
+                        // Классифицируем изображение
+                        model.classify(imgContainer).then(predictions => {
+                            console.log(predictions);
+                            log.value = log.value + 'Результат->' + '\nКласс: ' + predictions[0].className + '\nВероятность: ' + predictions[0].probability;
+                        });
+                    });
+                } else {
+                    alert('Ошибка при загрузке изображения');
+                }
+            }
+            reader.readAsDataURL(files[0]);
+        }
+    });
+
+
+</script>
+
+{% endblock %}
